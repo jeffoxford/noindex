@@ -1,3 +1,5 @@
+from io import StringIO
+
 from oauth2client.service_account import ServiceAccountCredentials
 import httplib2
 import json
@@ -19,15 +21,15 @@ deleted_url=[]
 type=[]
 notifyTime=[]
 if uploaded_file is not None and button:
-    filename=uploaded_file.name
-
-    JSON_KEY_FILE = filename
+    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    string_data = stringio.read()
+    JSON_KEY_FILE = json.loads(string_data)
 
     SCOPES = ["https://www.googleapis.com/auth/indexing"]
     ENDPOINT = "https://indexing.googleapis.com/v3/urlNotifications:publish"
 
     # Authorize credentials
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_KEY_FILE, scopes=SCOPES)
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(JSON_KEY_FILE, scopes=SCOPES)
     http = credentials.authorize(httplib2.Http())
     # for checking purpuse i add 2
     if len(urls) > 200:
