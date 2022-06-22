@@ -57,7 +57,7 @@ for value in empty:
         type.append(value['urlNotificationMetadata']['latestRemove']['type'])
         notifyTime.append(value['urlNotificationMetadata']['latestRemove']['notifyTime'])
     except Exception as e:
-        print('Error')
+        st.error('Unsuccessful/Refresh Browser')
 
 df=pd.DataFrame(data={'url':deleted_url,'type':type,'notifyTime':notifyTime})
 
