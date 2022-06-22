@@ -62,6 +62,11 @@ for value in empty:
 
 df=pd.DataFrame(data={'url':deleted_url,'type':type,'notifyTime':notifyTime})
 
+if len(df)==0:
+    st.empty()
+else:
+    st.success('Success')
+
 @st.cache
 def convert_df(df):
      return df.to_csv(index=False).encode('utf-8')
