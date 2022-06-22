@@ -3,16 +3,17 @@ import httplib2
 import json
 import streamlit as st
 import pandas as pd
+import tldextract
 
-st.title('NoIndexing')
+st.title('Bulk URL Removal Tool')
 
-urls=st.text_area(label='Enter Urls',placeholder='Enter URLs (1 per line)').strip()
+urls=st.text_area(label='Enter URLs (max 200)',placeholder='Enter URLs (1 per line)').strip()
 
 urls=urls.split('\n')
 
 uploaded_file=st.file_uploader(label='Upload Credential File',type='json')
 
-button=st.button('Click Me')
+button=st.button('Start Noindexing URLs')
 empty=[]
 deleted_url=[]
 type=[]
@@ -34,7 +35,9 @@ if uploaded_file is not None and button:
     else:
         for url in urls:
             try:
-                if not url.endswith('.com/'):
+                result=tldextract.extract(url)
+                suffix = result.suffix + '/'
+                if not url.endswith(suffix):
                     content = {}
                     content['url'] = url
                     content['type'] = "URL_DELETED"
@@ -42,12 +45,10 @@ if uploaded_file is not None and button:
                     response, content = http.request(ENDPOINT, method="POST", body=json_content)
                     result = json.loads(content.decode())
                     empty.append(result)
-                    st.write(result)
-                    st.success('Success')
-                else:
-                    st.error('Urls Should Not End With .com/')
             except Exception as e:
                 st.error('UnsuccessFul')
+    st.success('Sucess')
+
 
 for value in empty:
     try:
@@ -55,7 +56,7 @@ for value in empty:
         type.append(value['urlNotificationMetadata']['latestRemove']['type'])
         notifyTime.append(value['urlNotificationMetadata']['latestRemove']['notifyTime'])
     except Exception as e:
-        st.error('Error')
+        print('Error')
 
 df=pd.DataFrame(data={'url':deleted_url,'type':type,'notifyTime':notifyTime})
 
@@ -65,7 +66,7 @@ def convert_df(df):
 
 csv = convert_df(df)
 st.download_button(
-    label="Get Deleted URLS",
+    label="Export API Responses",
     data=csv,
     file_name='response.csv',
     mime='text/csv')
