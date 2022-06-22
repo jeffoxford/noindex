@@ -49,7 +49,6 @@ if uploaded_file is not None and button:
                     empty.append(result)
             except Exception as e:
                 st.error('UnsuccessFul')
-    st.success('Sucess')
 
 
 for value in empty:
