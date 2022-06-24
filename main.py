@@ -9,9 +9,11 @@ import tldextract
 
 st.title('Bulk URL Removal Tool')
 
-urls=st.text_area(label='Enter URLs (max 200)',placeholder='Enter URLs (1 per line)').strip()
+urls=st.text_area(label='Enter URLs (max 200)',placeholder='Enter URLs (1 per line)').strip('')
+
 
 urls=urls.split('\n')
+
 
 uploaded_file=st.file_uploader(label='Upload Credential File',type='json')
 
@@ -59,8 +61,10 @@ if uploaded_file is not None and button:
         for url in urls:
             deleted_url.append(url)
             try:
+                # url=url+'/'
                 result=tldextract.extract(url)
                 suffix = result.suffix + '/'
+                print(suffix)
                 if not url.endswith(suffix):
                     content = {}
                     content['url'] = url
@@ -168,19 +172,32 @@ for value in empty:
             description.append(value['error']['details'][1]['links'][0]['description'])
             url_error.append(value['error']['details'][1]['links'][0]['url'])
 
+@st.cache
+def convert_df(df):
+     return df.to_csv(index=False).encode('utf-8')
 
-df=pd.DataFrame(data={'url':deleted_url,'type':type,'notifyTime':notifyTime,'code':code,
+
+try:
+    df=pd.DataFrame(data={'url':deleted_url,'type':type,'notifyTime':notifyTime,'code':code,
                       'message':message,'status':status,'type_error':type_error,'reason':reason,'domain':domain,
                       'quota_limit_value':quota_limit_value,'quota_limit':quota_limit,'service':service,
                       'quota_metric':quota_metric,'consumer':consumer,'quota_location':quota_location,
                       'type_error2':type_error2,'description':description,'url_error':url_error})
 
-
-if button:
-    response_df=pd.DataFrame({'error_403':[len(df[df['code']==403])],'error_400':[len(df[df['code'] == 400])],
+    csv = convert_df(df)
+    st.download_button(
+        label="Export API Responses",
+        data=csv,
+        file_name='response.csv',
+        mime='text/csv')
+    if button:
+        response_df=pd.DataFrame({'error_403':[len(df[df['code']==403])],'error_400':[len(df[df['code'] == 400])],
                               'error_429':[len(df[df['code'] == 429])],
                               'success_response':[len(df[df['type']=='URL_DELETED'])]})
-    st.dataframe(response_df)
+        st.dataframe(response_df)
+except:
+    st.error('HomePage URLs Detected Remove And Refresh')
+
     # if len(df[df['code']==403])>0:
     #     st.error("Total Number of 403 Error Response "+ str(len(df[df['code']==403])))
     # if len(df[df['code'] == 400])>0:
@@ -192,16 +209,6 @@ if button:
 
 
 
-@st.cache
-def convert_df(df):
-     return df.to_csv(index=False).encode('utf-8')
-
-csv = convert_df(df)
-st.download_button(
-    label="Export API Responses",
-    data=csv,
-    file_name='response.csv',
-    mime='text/csv')
 
 
 
